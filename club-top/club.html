@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+  <title>第60回白陵文化祭 HERO</title>
+    <link rel="stylesheet" href="club.css">
+</head>
+<body>
+  <header>
+    <h1>クラブ紹介</h1>
+    <div class="menu-icon" id="menuIcon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav id="navMenu">
+      <a href="#">TOP</a>
+      <a href="#">CLUB</a>
+      <a href="#">MAP</a>
+      <a href="#">EVENT</a>
+      <a href="#">GOODS</a>
+      <a href="#">ACCESS</a>
+    </nav>
+  </header>
+  <div id="overlayMenu">
+      <a href="#">TOP</a>
+      <a href="#">CLUB</a>
+      <a href="#">MAP</a>
+      <a href="#">EVENT</a>
+      <a href="#">GOODS</a>
+      <a href="#">ACCESS</a>
+  </div>
+
+  <div class="floor-buttons">
+    <div class="floor-highlight"></div> <!--これが水色のハイライト要素になります-->
+    <button class="floor-button active" onclick="showFloor(1, this)">1F</button>
+    <button class="floor-button active" onclick="showFloor(2, this)">2F</button>
+
+    <button class="floor-button" onclick="showFloor(3, this)">3F</button>
+    <button class="floor-button" onclick="showFloor(4, this)">4F</button>
+  </div>
+
+  <div class="map-image">
+    <img id="floorMap" src="1F.png" alt="構内図">
+  </div>
+
+  <div id="clubContainer" class="club-list">
+<!-- JSで自動挿入します -->
+    </div>
+
+<footer>
+  <div class="wave-border">
+    <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
+      <path d="M0,30 C300,60 900,0 1200,30 L1200,100 L0,100 Z" fill="#333"></path>
+    </svg>
+  </div>
+  <div class="footer-content">
+    <p>© 2025 Hakuryo C.P.C.</p>
+  </div>
+</footer>
+
+
+<script>
+  let clubData = {};
+
+  // bukatu.txt を読み込んでフロア別にデータ構造を構築
+  async function loadClubData() {
+    try {
+      const res = await fetch('bukatu.txt');
+      const text = await res.text();
+      text.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        const [floorLabel, rest] = trimmed.split(':');
+        const floorNum = floorLabel.replace('F','').trim();
+        const [clubName, clubDesc = "説明は準備中です。"] = rest.split('$$');
+
+        if (!clubData[floorNum]) clubData[floorNum] = [];
+        clubData[floorNum].push({
+          name: clubName.trim(),
+          desc: clubDesc.trim()
+        });
+      });
+    } catch (err) {
+      console.error('クラブデータ読み込み失敗:', err);
+    }
+  }
+
+  // フロア選択時の動作：ハイライト移動、地図更新、クラブ表示
+  function showFloor(floor, btnElement) {
+  // これで btnElement はクリックされたボタンの要素になる
+  btnElement.classList.add('active');
+    // アクティブ状態を切り替え
+    document.querySelectorAll('.floor-button').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    // 構内図画像変更
+    document.getElementById('floorMap').src = `assets/${floor}F.png`;
+
+    // ハイライトのアニメーション移動
+    const highlight = document.querySelector('.floor-highlight');
+    highlight.style.left = btnElement.offsetLeft + 'px';
+    highlight.style.width = btnElement.clientWidth + 'px';
+
+    // クラブリスト生成
+    const clubs = clubData[floor] || [];
+    const container = document.getElementById('clubContainer');
+
+    if (clubs.length === 0) {
+      container.innerHTML = '<p>このフロアの部活情報はまだありません。</p>';
+    } else {
+      container.innerHTML = clubs.map(({ name, desc }) => `
+        <div class="club-item">
+          <div class="club-name">▶ ${name}</div>
+          <div class="club-content">${desc}</div>
+        </div>
+      `).join('');
+
+      // トグル表示のイベントを付与
+      container.querySelectorAll('.club-name').forEach(el => {
+        el.addEventListener('click', () => {
+          const content = el.nextElementSibling;
+          const isOpen = content.style.display === 'block';
+          content.style.display = isOpen ? 'none' : 'block';
+          el.innerText = (isOpen ? '▶ ' : '▼ ') + el.innerText.slice(2);
+        });
+      });
+    }
+  }
+
+  // 初期化処理
+  window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('menuIcon').addEventListener('click', toggleOverlayMenu);
+
+    await loadClubData();
+
+    // フロアボタンのイベント設定
+    document.querySelectorAll('.floor-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const floor = btn.getAttribute('data-floor') || btn.innerText.replace('F','');
+        showFloor(floor, btn);
+      });
+    });
+
+    // 初期ハイライト配置（1F）
+    const activeBtn = document.querySelector('.floor-button.active');
+    const hl = document.querySelector('.floor-highlight');
+    hl.style.left = activeBtn.offsetLeft + 'px';
+    hl.style.width = activeBtn.clientWidth + 'px';
+
+    // 初期表示：1F
+    showFloor('1', activeBtn);
+  });
+
+  // ここからハンバーガーメニュー
+  function toggleOverlayMenu() {
+      const overlay = document.getElementById('overlayMenu');
+      const icon = document.getElementById('menuIcon');
+      overlay.classList.toggle('active');
+      icon.classList.toggle('open');
+    }
+  //ここからヘッダーのアニメーション
+  const wave = document.querySelector('.wave-border svg path');
+  let step = 0;
+
+  function animateWave() {
+    step += 0.05;
+    const offset = Math.sin(step) * 10;
+    wave.setAttribute('d', `M0,${30 + offset} C300,${60 + offset} 900,${0 + offset} 1200,${30 + offset} L1200,100 L0,100 Z`);
+    requestAnimationFrame(animateWave);
+}
+
+animateWave();
+
+</script>
+
+</body>
+</html>
