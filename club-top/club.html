@@ -18,39 +18,39 @@
       <span></span>
     </div>
     <nav id="navMenu">
-      <a href="#">TOP</a>
-      <a href="#">CLUB</a>
-      <a href="#">MAP</a>
-      <a href="#">EVENT</a>
-      <a href="#">GOODS</a>
-      <a href="#">ACCESS</a>
+      <a href="javascript:void(0)">TOP</a>
+      <a href="javascript:void(0)">CLUB</a>
+      <a href="javascript:void(0)">MAP</a>
+      <a href="javascript:void(0)">EVENT</a>
+      <a href="javascript:void(0)">GOODS</a>
+      <a href="javascript:void(0)">ACCESS</a>
     </nav>
   </header>
+
   <div id="overlayMenu">
-      <a href="#">TOP</a>
-      <a href="#">CLUB</a>
-      <a href="#">MAP</a>
-      <a href="#">EVENT</a>
-      <a href="#">GOODS</a>
-      <a href="#">ACCESS</a>
+    <a href="javascript:void(0)">TOP</a>
+    <a href="javascript:void(0)">CLUB</a>
+    <a href="javascript:void(0)">MAP</a>
+    <a href="javascript:void(0)">EVENT</a>
+    <a href="javascript:void(0)">GOODS</a>
+    <a href="javascript:void(0)">ACCESS</a>
   </div>
 
   <div class="floor-buttons">
-    <div class="floor-highlight"></div> <!--これが水色のハイライト要素になります-->
+    <div class="floor-highlight"></div>
     <button class="floor-button active" onclick="showFloor(1, this)">1F</button>
-    <button class="floor-button active" onclick="showFloor(2, this)">2F</button>
-
+    <button class="floor-button" onclick="showFloor(2, this)">2F</button>
     <button class="floor-button" onclick="showFloor(3, this)">3F</button>
-    <button class="floor-button" onclick="showFloor(4, this)">4F</button>
+        <button class="floor-button" onclick="showFloor(4, this)">4F</button>
   </div>
 
   <div class="map-image">
-    <img id="floorMap" src="1F.png" alt="構内図">
+    <img id="floorMap" src="assets/1F.png" alt="構内図" />
   </div>
 
   <div id="clubContainer" class="club-list">
-<!-- JSで自動挿入します -->
-    </div>
+    <!-- JSで自動挿入されます -->
+  </div>
 
 <footer>
   <div class="wave-border">
@@ -59,125 +59,134 @@
     </svg>
   </div>
   <div class="footer-content">
+    <div class="footer-columns">
+      <div class="footer-nav">
+        <a href="#">TOP</a>
+        <a href="#">CLUB</a>
+        <a href="#">MAP</a>
+        <a href="#">EVENT</a>
+        <a href="#">GOODS</a>
+        <a href="#">ACCESS</a>
+      </div>
+      <div class="footer-info">
+        <a href="#">デジタルパンフレットをダウンロード</a>
+        <a href="#">学校公式HPへ</a>
+      </div>
+    </div>
     <p>© 2025 Hakuryo C.P.C.</p>
   </div>
 </footer>
 
 
-<script>
-  let clubData = {};
 
-  // bukatu.txt を読み込んでフロア別にデータ構造を構築
-  async function loadClubData() {
-    try {
-      const res = await fetch('bukatu.txt');
-      const text = await res.text();
-      text.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (!trimmed) return;
+  <script>
+    let clubData = {};
 
-        const [floorLabel, rest] = trimmed.split(':');
-        const floorNum = floorLabel.replace('F','').trim();
-        const [clubName, clubDesc = "説明は準備中です。"] = rest.split('$$');
+    async function loadClubData() {
+      try {
+        const res = await fetch('bukatu.txt');
+        const text = await res.text();
+        text.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
 
-        if (!clubData[floorNum]) clubData[floorNum] = [];
-        clubData[floorNum].push({
-          name: clubName.trim(),
-          desc: clubDesc.trim()
+          const [floorLabel, rest] = trimmed.split(':');
+          const floorNum = floorLabel.replace('F','').trim();
+          const [clubName, clubDesc = "説明は準備中です。"] = rest.split('$$');
+
+          if (!clubData[floorNum]) clubData[floorNum] = [];
+          clubData[floorNum].push({
+            name: clubName.trim(),
+            desc: clubDesc.trim()
+          });
+        });
+      } catch (err) {
+        console.error('クラブデータ読み込み失敗:', err);
+      }
+    }
+
+    function showFloor(floor, btnElement) {
+      document.querySelectorAll('.floor-button').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      document.getElementById('floorMap').src = `assets/${floor}F.png`;
+
+      const highlight = document.querySelector('.floor-highlight');
+      highlight.style.left = btnElement.offsetLeft + 'px';
+      highlight.style.width = btnElement.clientWidth + 'px';
+
+      const clubs = clubData[floor] || [];
+      const container = document.getElementById('clubContainer');
+
+      if (clubs.length === 0) {
+        container.innerHTML = '<p>このフロアの部活情報はまだありません。</p>';
+      } else {
+        container.innerHTML = clubs.map(({ name, desc }) => `
+          <div class="club-item">
+            <div class="club-name">
+              <span class="caret-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right" viewBox="0 0 16 16">
+                  <path d="M6 12.796V3.204L11.481 8zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753"/>
+                </svg>
+              </span>
+              <span class="club-title">${name}</span>
+            </div>
+            <div class="club-content">${desc}</div>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.club-name').forEach(el => {
+          el.addEventListener('click', () => {
+            const content = el.nextElementSibling;
+            const iconSpan = el.querySelector('.caret-icon');
+            const isOpen = content.style.display === 'block';
+            content.style.display = isOpen ? 'none' : 'block';
+
+            iconSpan.innerHTML = isOpen
+              ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right" viewBox="0 0 16 16"><path d="M6 12.796V3.204L11.481 8zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753"/></svg>`
+              : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16"><path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/></svg>`;
+          });
+        });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('menuIcon').addEventListener('click', toggleOverlayMenu);
+      await loadClubData();
+
+      document.querySelectorAll('.floor-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const floor = btn.getAttribute('data-floor') || btn.innerText.replace('F', '');
+          showFloor(floor, btn);
         });
       });
-    } catch (err) {
-      console.error('クラブデータ読み込み失敗:', err);
-    }
-  }
 
-  // フロア選択時の動作：ハイライト移動、地図更新、クラブ表示
-  function showFloor(floor, btnElement) {
-  // これで btnElement はクリックされたボタンの要素になる
-  btnElement.classList.add('active');
-    // アクティブ状態を切り替え
-    document.querySelectorAll('.floor-button').forEach(b => b.classList.remove('active'));
-    btnElement.classList.add('active');
+      const activeBtn = document.querySelector('.floor-button.active');
+      const hl = document.querySelector('.floor-highlight');
+      hl.style.left = activeBtn.offsetLeft + 'px';
+      hl.style.width = activeBtn.clientWidth + 'px';
 
-    // 構内図画像変更
-    document.getElementById('floorMap').src = `assets/${floor}F.png`;
-
-    // ハイライトのアニメーション移動
-    const highlight = document.querySelector('.floor-highlight');
-    highlight.style.left = btnElement.offsetLeft + 'px';
-    highlight.style.width = btnElement.clientWidth + 'px';
-
-    // クラブリスト生成
-    const clubs = clubData[floor] || [];
-    const container = document.getElementById('clubContainer');
-
-    if (clubs.length === 0) {
-      container.innerHTML = '<p>このフロアの部活情報はまだありません。</p>';
-    } else {
-      container.innerHTML = clubs.map(({ name, desc }) => `
-        <div class="club-item">
-          <div class="club-name">▶ ${name}</div>
-          <div class="club-content">${desc}</div>
-        </div>
-      `).join('');
-
-      // トグル表示のイベントを付与
-      container.querySelectorAll('.club-name').forEach(el => {
-        el.addEventListener('click', () => {
-          const content = el.nextElementSibling;
-          const isOpen = content.style.display === 'block';
-          content.style.display = isOpen ? 'none' : 'block';
-          el.innerText = (isOpen ? '▶ ' : '▼ ') + el.innerText.slice(2);
-        });
-      });
-    }
-  }
-
-  // 初期化処理
-  window.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('menuIcon').addEventListener('click', toggleOverlayMenu);
-
-    await loadClubData();
-
-    // フロアボタンのイベント設定
-    document.querySelectorAll('.floor-button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const floor = btn.getAttribute('data-floor') || btn.innerText.replace('F','');
-        showFloor(floor, btn);
-      });
+      showFloor('1', activeBtn);
     });
 
-    // 初期ハイライト配置（1F）
-    const activeBtn = document.querySelector('.floor-button.active');
-    const hl = document.querySelector('.floor-highlight');
-    hl.style.left = activeBtn.offsetLeft + 'px';
-    hl.style.width = activeBtn.clientWidth + 'px';
-
-    // 初期表示：1F
-    showFloor('1', activeBtn);
-  });
-
-  // ここからハンバーガーメニュー
-  function toggleOverlayMenu() {
+    function toggleOverlayMenu() {
       const overlay = document.getElementById('overlayMenu');
       const icon = document.getElementById('menuIcon');
       overlay.classList.toggle('active');
       icon.classList.toggle('open');
     }
-  //ここからヘッダーのアニメーション
-  const wave = document.querySelector('.wave-border svg path');
-  let step = 0;
 
-  function animateWave() {
-    step += 0.05;
-    const offset = Math.sin(step) * 10;
-    wave.setAttribute('d', `M0,${30 + offset} C300,${60 + offset} 900,${0 + offset} 1200,${30 + offset} L1200,100 L0,100 Z`);
-    requestAnimationFrame(animateWave);
-}
+    const wave = document.querySelector('.wave-border svg path');
+    let step = 0;
 
-animateWave();
+    function animateWave() {
+      step += 0.05;
+      const offset = Math.sin(step) * 10;
+      wave.setAttribute('d', `M0,${30 + offset} C300,${60 + offset} 900,${0 + offset} 1200,${30 + offset} L1200,100 L0,100 Z`);
+      requestAnimationFrame(animateWave);
+    }
 
-</script>
-
+    animateWave();
+  </script>
 </body>
 </html>
