@@ -146,3 +146,62 @@
     .timetable-b{
       background-color: rgb(193, 239, 255);
     }
+        @media (min-width: 768px) and (max-width: 1024px) {
+      header {
+        justify-content: space-between;
+      }
+
+      .menu-icon {
+        display: none;
+      }
+
+      nav {
+        display: flex;
+        gap: 1em;
+        margin: 0 auto;
+      }
+
+      nav a {
+        color: #333;
+        text-decoration: none;
+        font-size: 1em;
+        padding: 0.5em 1em;
+      }
+
+      .footer-content p {
+        font-size: 1.1rem;
+      }
+      .footer-columns{
+          padding: 0 100px;
+      }
+    }
+
+    @media(min-width: 1025px) {
+      header {
+        justify-content: space-between;
+      }
+
+      header h1 {
+        width: auto;
+        text-align: left;
+      }
+
+      .menu-icon {
+        display: none;
+      }
+
+      nav {
+        display: flex;
+        gap: 1em;
+      }
+
+      nav a {
+        color: #000;
+        text-decoration: none;
+        font-size: 1em;
+        padding: 0.5em 1em;
+      }
+      .footer-content p {
+        font-size: 1.2rem;
+      }
+    }

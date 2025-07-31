@@ -12,6 +12,7 @@
 
 <body>
   <!--ヘッダーのところ池田先輩のところコピペさせていただきました。ハンバーガーメニューのところだけクリックしても出てこないです...-->
+  
   <header>
     <h1>イベント</h1>
     <div class="menu-icon" id="menuIcon">
@@ -53,7 +54,18 @@
         <div class="timetable-b">イベント</div>
     </div>
   </div>
-
+<script>
+      window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('menuIcon').addEventListener('click', toggleOverlayMenu);
+      await loadClubData();
+      });
+  function toggleOverlayMenu() {
+      const overlay = document.getElementById('overlayMenu');
+      const icon = document.getElementById('menuIcon');
+      overlay.classList.toggle('active');
+      icon.classList.toggle('open');
+    }
+</script>
 </body>
   
   
