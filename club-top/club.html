@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
   <title>第60回白陵文化祭 HERO</title>
+  <link rel="stylesheet" href="../default.css">
     <link rel="stylesheet" href="club.css">
 </head>
 <body>
@@ -53,11 +54,6 @@
   </div>
 
 <footer>
-  <div class="wave-border">
-    <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
-      <path d="M0,30 C300,60 900,0 1200,30 L1200,100 L0,100 Z" fill="#333"></path>
-    </svg>
-  </div>
   <div class="footer-content">
     <div class="footer-columns">
       <div class="footer-nav">
@@ -175,18 +171,6 @@
       overlay.classList.toggle('active');
       icon.classList.toggle('open');
     }
-
-    const wave = document.querySelector('.wave-border svg path');
-    let step = 0;
-
-    function animateWave() {
-      step += 0.05;
-      const offset = Math.sin(step) * 10;
-      wave.setAttribute('d', `M0,${30 + offset} C300,${60 + offset} 900,${0 + offset} 1200,${30 + offset} L1200,100 L0,100 Z`);
-      requestAnimationFrame(animateWave);
-    }
-
-    animateWave();
   </script>
 </body>
 </html>
