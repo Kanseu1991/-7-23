@@ -10,3 +10,165 @@
   <link rel="stylesheet" href="../default.css">
     <link rel="stylesheet" href="map.css">
 </head>
+<body>
+  <header>
+    <h1>構内マップ</h1>
+    <div class="menu-icon" id="menuIcon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav id="navMenu">
+      <a href="../index.html">TOP</a>
+      <a href="../club-top/club.html">CLUB</a>
+      <a href="../map-top/map.html">MAP</a>
+      <a href="../event-top/event.html">EVENT</a>
+      <a href="../goods-top/goods.html">GOODS</a>
+      <a href="../access-top/access.html">ACCESS</a>
+    </nav>
+  </header>
+
+  <div id="overlayMenu">
+      <a href="../index.html">TOP</a>
+      <a href="../club-top/club.html">CLUB</a>
+      <a href="../map-top/map.html">MAP</a>
+      <a href="../event-top/event.html">EVENT</a>
+      <a href="../goods-top/goods.html">GOODS</a>
+      <a href="../access-top/access.html">ACCESS</a>
+  </div>
+
+  <div class="floor-buttons">
+    <div class="floor-highlight"></div>
+    <button class="floor-button active" onclick="showFloor(1, this)">会場</button>
+    <button class="floor-button" onclick="showFloor(2, this)">ショップ</button>
+  </div>
+
+  <div class="map-image">
+    <img id="floorMap" src="assets/1F.png" alt="会場、ショップマップ" />
+  </div>
+
+  <div id="clubContainer" class="club-list">
+    <!-- JSで自動挿入されます -->
+  </div>
+
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-columns">
+      <div class="footer-nav">
+      <a href="../index.html">TOP</a>
+      <a href="#">CLUB</a>
+      <a href="../map-top/map.html">MAP</a>
+      <a href="../event-top/event.html">EVENT</a>
+      <a href="../goods-top/goods.html">GOODS</a>
+      <a href="../access-top/access.html">ACCESS</a>
+      </div>
+      <div class="footer-info">
+        <a href="#">デジタルパンフレットをダウンロード</a>
+        <a href="#">学校公式HPへ</a>
+      </div>
+    </div>
+    <p>© 2025 Hakuryo C.P.C.</p>
+  </div>
+</footer>
+
+<!-- コードの共通化の為、会場:1T,ショップ:2Tとしています。これは画像を読み込む際も同じ -->
+
+  <script>
+    let clubData = {};
+
+    async function loadClubData() {
+      try {
+        const res = await fetch('mapdata.txt');
+        const text = await res.text();
+        text.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+
+          const [floorLabel, rest] = trimmed.split(':');
+          const floorNum = floorLabel.replace('T','').trim();
+          const [clubName, clubDesc = "説明は準備中です。"] = rest.split('$$');
+
+          if (!clubData[floorNum]) clubData[floorNum] = [];
+          clubData[floorNum].push({
+            name: clubName.trim(),
+            desc: clubDesc.trim()
+          });
+        });
+      } catch (err) {
+        console.error('ショップ・会場データ読み込み失敗:', err);
+      }
+    }
+
+    function showFloor(floor, btnElement) {
+      document.querySelectorAll('.floor-button').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      document.getElementById('floorMap').src = `assets/${floor}T.png`;
+
+      const highlight = document.querySelector('.floor-highlight');
+      highlight.style.left = btnElement.offsetLeft + 'px';
+      highlight.style.width = btnElement.clientWidth + 'px';
+
+      const clubs = clubData[floor] || [];
+      const container = document.getElementById('clubContainer');
+
+      if (clubs.length === 0) {
+        container.innerHTML = '<p>ショップ・会場情報はまだありません。</p>';
+      } else {
+        container.innerHTML = clubs.map(({ name, desc }) => `
+          <div class="club-item">
+            <div class="club-name">
+              <span class="caret-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right" viewBox="0 0 16 16">
+                  <path d="M6 12.796V3.204L11.481 8zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753"/>
+                </svg>
+              </span>
+              <span class="club-title">${name}</span>
+            </div>
+            <div class="club-content">${desc}</div>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.club-name').forEach(el => {
+          el.addEventListener('click', () => {
+            const content = el.nextElementSibling;
+            const iconSpan = el.querySelector('.caret-icon');
+            const isOpen = content.style.display === 'block';
+            content.style.display = isOpen ? 'none' : 'block';
+
+            iconSpan.innerHTML = isOpen
+              ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right" viewBox="0 0 16 16"><path d="M6 12.796V3.204L11.481 8zm.659.753 5.48-4.796a1 1 0 0 0 0-1.506L6.66 2.451C6.011 1.885 5 2.345 5 3.204v9.592a1 1 0 0 0 1.659.753"/></svg>`
+              : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16"><path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/></svg>`;
+          });
+        });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('menuIcon').addEventListener('click', toggleOverlayMenu);
+      await loadClubData();
+
+      document.querySelectorAll('.floor-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const floor = btn.getAttribute('data-floor') || btn.innerText.replace('F', '');
+          showFloor(floor, btn);
+        });
+      });
+
+      const activeBtn = document.querySelector('.floor-button.active');
+      const hl = document.querySelector('.floor-highlight');
+      hl.style.left = activeBtn.offsetLeft + 'px';
+      hl.style.width = activeBtn.clientWidth + 'px';
+
+      showFloor('1', activeBtn);
+    });
+    function toggleOverlayMenu() {
+      const overlay = document.getElementById('overlayMenu');
+      const icon = document.getElementById('menuIcon');
+      overlay.classList.toggle('active');
+      icon.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>
